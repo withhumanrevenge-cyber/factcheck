@@ -9,11 +9,13 @@ Rule across all of them: when something is missing or uncertain, show less, neve
   never for high harm, capped at medium confidence (C3).
 - A Gateway fallback answer is a veto only: the primary model was unsure, so the
   claim is Unverifiable whatever the fallback said (C3).
+- An outdated verdict needs dates that line up, checked in code (Phase 0 findings).
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 
 from factcheck.decider.base import BooleanAnswer, ChoiceAnswer, Decision, ScoreAnswer
 from factcheck.evidence import EvidenceItem, normalise_domain
@@ -56,7 +58,31 @@ def counted_items(
     return out
 
 
-def stance_rule(verdict: str, counted: list[Counted], policy: Policy = DEFAULT_POLICY) -> str:
+def outdated_date_rule(counted: list[Counted], as_of: date | None) -> str:
+    """Dates are checked here, not by the decider, which is weak at date reasoning.
+
+    An outdated verdict needs a superseding item with a known date on or before as_of, and
+    newer than the newest dated item that supports the claim."""
+    superseded = [c.item.published_at for c in counted if c.stance == "superseded"]
+    if not superseded:
+        return "no_superseded_evidence"
+    dated = [d for d in superseded if d is not None and (as_of is None or d <= as_of)]
+    if not dated:
+        return "superseded_date_unknown"
+    supporting = [
+        c.item.published_at for c in counted if c.stance == "supports" and c.item.published_at
+    ]
+    if supporting and max(dated) <= max(supporting):
+        return "superseded_not_newer_than_support"
+    return "ok"
+
+
+def stance_rule(
+    verdict: str,
+    counted: list[Counted],
+    policy: Policy = DEFAULT_POLICY,
+    as_of: date | None = None,
+) -> str:
     """Returns "ok", or the reason the counted stances do not back this verdict."""
     by = {s: [c for c in counted if c.stance == s] for s in {c.stance for c in counted}}
     if verdict in ("supported", "refuted"):
@@ -80,7 +106,7 @@ def stance_rule(verdict: str, counted: list[Counted], policy: Policy = DEFAULT_P
     if verdict == "missing_context":
         return "ok" if by.get("context") else "no_context_evidence"
     if verdict == "outdated":
-        return "ok" if by.get("superseded") else "no_superseded_evidence"
+        return outdated_date_rule(counted, as_of)
     return "ok"
 
 
@@ -109,6 +135,7 @@ def decide_outcome(
     policy: Policy = DEFAULT_POLICY,
     *,
     sensitive_topic: bool = False,
+    as_of: date | None = None,
 ) -> Outcome:
     if not counted or verdict_decision is None:
         return Outcome(UNVERIFIABLE, None, "no_counted_evidence")
@@ -130,7 +157,7 @@ def decide_outcome(
         return Outcome(UNVERIFIABLE, v, "decider_unverifiable", verdict.p())
 
     high_harm = is_high_harm(harm, policy, sensitive_topic)
-    rule = stance_rule(v, counted, policy)
+    rule = stance_rule(v, counted, policy, as_of)
 
     if not verdict_decision.has_probabilities:
         if v not in ("supported", "refuted"):

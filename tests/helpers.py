@@ -1,19 +1,27 @@
+from datetime import date
+
 from factcheck.decider import BooleanAnswer, ChoiceAnswer, Decision, ScoreAnswer
 from factcheck.evidence import EvidenceItem
 from factcheck.gates import Counted
 
 
-def item(id: str, domain: str, tier: int) -> EvidenceItem:
+def item(id: str, domain: str, tier: int, published_at: date | None = None) -> EvidenceItem:
     return EvidenceItem(
         id=id,
         claim_id="c1",
         url=f"https://{domain}/{id}",
         domain=domain,
         tier=tier,
+        published_at=published_at,
         quoted_span="quote",
         span_verified=True,
         origin="bundle",
     )
+
+
+def dated(stance: str, published: str | None, id: str = "e1") -> Counted:
+    d = date.fromisoformat(published) if published else None
+    return Counted(item(id, f"{id}.example", 1, d), stance, 0.9)
 
 
 def counted(*specs: tuple[str, str, int, str]) -> list[Counted]:

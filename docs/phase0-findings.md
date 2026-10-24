@@ -9,7 +9,7 @@ Checked 2026-10-24 against the providers' docs (sources at the end). Three answe
 | Which Gateway API to call | Decision API, `POST https://ai-gateway.vercel.sh/v1/evaluate`, recommended for new code. The TypeSafe-compatible `/typesafe/v1/systemone` is the same capability with `noul` naming | `decider/jev.py` uses `/v1/evaluate`: `boolean` answers carry `probability`, Choice and Score carry `probabilities` |
 | Does a fallback say which model answered? (review Q7) | Yes. Top-level `model` names the fallback model when it answered, and `x-ai-gateway-decision-fallback-triggered: true` is set. A language-model fallback returns `confidence: 0` and `probabilities: {}` for Choice and Score, meaning "unavailable" | Any fallback answer is a veto only: the claim is shown as Unverifiable (`gates.py`). Empty probabilities are read as "none" |
 | Jev request limits | State plus all questions about 64k tokens; state plus any one question about 32k. A long-context header raises this but is "danger zone" | Fits 8 items with context easily; no long-context header |
-| Jev weaknesses | Literal reading; unreliable counting, arithmetic and dates; Choice always returns an allowed option; text in state can sway answers | The outdated verdict needs a code date check, not Jev's reading of dates (still to build). Every shown verdict is cross-checked against stances in code |
+| Jev weaknesses | Literal reading; unreliable counting, arithmetic and dates; Choice always returns an allowed option; text in state can sway answers | An outdated verdict is checked against dates in code (`gates.outdated_date_rule`), not Jev's reading of them. Every shown verdict is cross-checked against stances in code |
 | Jev price and speed | $0.042 per million input tokens, output free; 70–500 ms, mostly about 100 ms | Cost read from `providerMetadata.gateway.cost` per call |
 | Zero data retention | Gateway `providerOptions.gateway.zeroDataRetention: true`; needs a Pro or Enterprise plan | `ZERO_DATA_RETENTION=true` sets it |
 | Direct TypeSafe access | New signups paused since September 22, 2026 | Use the Gateway only |
@@ -21,7 +21,7 @@ Checked 2026-10-24 against the providers' docs (sources at the end). Three answe
 
 1. **Groq's token limits may not carry a hosted product.** At 8K tokens a minute, one claim with a few fetched pages can use a whole minute's budget, and 200K tokens a day is a few dozen checks. Check your account's actual limits on the console's limits page and what higher tiers allow before Track B; otherwise plan a second LLM provider behind the same interface from the start.
 2. **Gateway escalation (arm D) cannot produce shown verdicts.** Because a fallback answer is only a veto, arm D can only lower coverage in production. The spike still measures its raw accuracy, which is useful if the policy changes.
-3. **Jev and dates.** The outdated verdict leans on date reasoning, which Jev is documented as weak at. Compare `published` dates against `as_of` in code before trusting an outdated verdict.
+3. **Jev and dates.** The outdated verdict leans on date reasoning, which Jev is documented as weak at, so code now compares dates before an outdated verdict can be shown. The page date it relies on is `datePublished`, which on some sites (Wikipedia, for one) is the page's creation date, not its last edit; `dateModified` may need to count too.
 
 ## Still open
 

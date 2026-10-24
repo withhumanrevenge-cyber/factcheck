@@ -170,7 +170,7 @@ def run_bundle(
             rec["model_verdict"] = v.choice
             rec["verdict_probability"] = v.p()
             rec["verdict_answers"] = {k: _answer_dict(a) for k, a in verdict_dec.answers.items()}
-        rec["outcome"] = asdict(decide_outcome(verdict_dec, counted, policy))
+        rec["outcome"] = asdict(decide_outcome(verdict_dec, counted, policy, as_of=bundle.as_of))
     except DeciderError as e:
         rec["error"] = str(e)
     return rec

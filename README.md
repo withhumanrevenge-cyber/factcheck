@@ -27,6 +27,7 @@ UV_PYTHON=.venv/Scripts/python.exe uv sync
 | Run the spike on the dev split | `uv run python -m factcheck.eval.runner --arms jev,groq,strong,jev+fallback --split dev` |
 | Same, with Choice options shuffled (order sensitivity) | add `--permute-seed 1` |
 | Compare arms in a run | `uv run python -m factcheck.eval.report runs/<timestamp>` |
+| Track B retrieval probe: span pass rate and tokens per claim on real pages | `uv run python -m factcheck.retrieval.probe data/probe/claims.example.jsonl` |
 
 ## Layout
 
@@ -39,7 +40,10 @@ UV_PYTHON=.venv/Scripts/python.exe uv sync
 | `src/factcheck/gates.py` | Code gates between answers and what users see |
 | `src/factcheck/policy.py` | Thresholds (placeholders until Phase 4) and the policy version |
 | `src/factcheck/eval/` | Bundle format, runner, metrics and report for the spike |
+| `src/factcheck/retrieval/` | Guarded fetcher, page text and date extraction, snapshot store, Groq quote extractor with a token pacer, and the Track B probe |
 | `data/bundles/` | Hand-built spike bundles; see its README for how to build them |
+| `data/probe/` | Probe input: one claim per line with the URLs to try (picked by hand until a search API is chosen) |
+| `data/source_tiers.json` | Curated domain → tier map (1 primary/official, 2 established outlet); unlisted domains are tier 3. Empty for now |
 | `docs/phase0-findings.md` | What the provider docs confirmed, and what is still open |
 
 ## Rules the code enforces
@@ -49,3 +53,6 @@ UV_PYTHON=.venv/Scripts/python.exe uv sync
 - A verdict is shown only if code finds matching stances from two independent domains, including a tier-1 or tier-2 source, and no equal-or-better source disagrees.
 - A Gateway fallback answer, or an LLM answer without probabilities, can only lower what is shown, never raise it.
 - Code, not the decider, decides whether to search again.
+- An outdated verdict needs a dated superseding source, on or before the check date and newer than any dated support.
+- Every fetched URL, user-given or model-chosen, must be http(s) on a default port and resolve only to public addresses; redirects are re-checked hop by hop, and bodies are capped at 2 MB.
+- Quotes from the Groq sub-agent are checked against our stored snapshot; its stance guess is only logged.

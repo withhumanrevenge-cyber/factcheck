@@ -1,12 +1,39 @@
-from helpers import counted, item, verdict_decision
+from datetime import date
+
+from helpers import counted, dated, item, verdict_decision
 
 from factcheck.decider import ChoiceAnswer, Decision
 from factcheck.gates import (
     counted_items,
     decide_outcome,
+    outdated_date_rule,
     should_search_again,
     stance_rule,
 )
+
+AS_OF = date(2026, 10, 1)
+
+
+def test_outdated_needs_a_dated_superseding_item():
+    assert outdated_date_rule([dated("superseded", None)], AS_OF) == "superseded_date_unknown"
+    assert (
+        outdated_date_rule([dated("superseded", "2026-12-01")], AS_OF) == "superseded_date_unknown"
+    )
+    assert outdated_date_rule([dated("superseded", "2026-05-01")], AS_OF) == "ok"
+
+
+def test_outdated_change_must_come_after_the_support():
+    older_change = [dated("supports", "2026-06-01", "e1"), dated("superseded", "2026-03-01", "e2")]
+    assert outdated_date_rule(older_change, AS_OF) == "superseded_not_newer_than_support"
+    newer_change = [dated("supports", "2025-06-01", "e1"), dated("superseded", "2026-03-01", "e2")]
+    assert outdated_date_rule(newer_change, AS_OF) == "ok"
+
+
+def test_outdated_verdict_withheld_when_dates_do_not_line_up():
+    evidence = [dated("supports", "2026-06-01", "e1"), dated("superseded", "2026-03-01", "e2")]
+    out = decide_outcome(verdict_decision("outdated", 0.95), evidence, as_of=AS_OF)
+    assert out.reason == "superseded_not_newer_than_support"
+
 
 TWO_REFUTING = counted(("e1", "city.example", 1, "refutes"), ("e2", "news.example", 2, "refutes"))
 
