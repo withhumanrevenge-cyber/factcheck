@@ -1,0 +1,45 @@
+{
+  "id": "example-refuted",
+  "synthetic": true,
+  "notes": "Format example only: invented town, invented sources. Not used in runs unless --include-synthetic.",
+  "claim": "Exampleton's Harbour Bridge reopened to traffic in March 2026.",
+  "as_of": "2026-10-01",
+  "label_verdict": "refuted",
+  "label_harm": "low",
+  "topic": "exampleton harbour bridge",
+  "source_publisher": "Example Fact Desk",
+  "source_url": "https://factdesk.example/harbour-bridge",
+  "source_published": "2026-09-20",
+  "evidence": [
+    {
+      "id": "e1",
+      "url": "https://city.example/notices/harbour-bridge",
+      "domain": "city.example",
+      "tier": 1,
+      "published_at": "2026-08-30",
+      "quote": "The Harbour Bridge will stay closed to all vehicles until repairs are finished in November 2026.",
+      "context": "Pedestrian access remains open on the north walkway. The Harbour Bridge will stay closed to all vehicles until repairs are finished in November 2026. Detours are signposted.",
+      "label_stance": "refutes"
+    },
+    {
+      "id": "e2",
+      "url": "https://news.example/2026/09/bridge-delay",
+      "domain": "news.example",
+      "tier": 2,
+      "published_at": "2026-09-04",
+      "quote": "the bridge, closed since January, has not reopened to cars and is not expected to before the winter",
+      "context": "Council engineers said steel deliveries were late. Officials confirmed that the bridge, closed since January, has not reopened to cars and is not expected to before the winter.",
+      "label_stance": "refutes"
+    },
+    {
+      "id": "e3",
+      "url": "https://blog.example/posts/bridge-rumour",
+      "domain": "blog.example",
+      "tier": 3,
+      "published_at": "2026-04-02",
+      "quote": "a post claiming the Harbour Bridge reopened in March has been shared thousands of times",
+      "context": "Local groups are discussing the closure. This week a post claiming the Harbour Bridge reopened in March has been shared thousands of times.",
+      "label_stance": "unrelated"
+    }
+  ]
+}

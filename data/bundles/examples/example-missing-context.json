@@ -1,0 +1,35 @@
+{
+  "id": "example-missing-context",
+  "synthetic": true,
+  "notes": "Format example only: invented town, invented sources. Not used in runs unless --include-synthetic.",
+  "claim": "Unemployment in Exampleton doubled last year.",
+  "as_of": "2026-10-01",
+  "label_verdict": "missing_context",
+  "label_harm": "medium",
+  "topic": "exampleton unemployment",
+  "source_publisher": "Example Fact Desk",
+  "source_url": "https://factdesk.example/unemployment-doubled",
+  "source_published": "2026-09-25",
+  "evidence": [
+    {
+      "id": "e1",
+      "url": "https://stats.example/labour/2025",
+      "domain": "stats.example",
+      "tier": 1,
+      "published_at": "2026-02-15",
+      "quote": "the unemployment rate in Exampleton rose from 2.1 percent to 4.2 percent over 2025",
+      "context": "Annual labour figures were released today. They show the unemployment rate in Exampleton rose from 2.1 percent to 4.2 percent over 2025. The figures are seasonally adjusted.",
+      "label_stance": "supports"
+    },
+    {
+      "id": "e2",
+      "url": "https://stats.example/labour/2025-notes",
+      "domain": "stats.example",
+      "tier": 1,
+      "published_at": "2026-02-15",
+      "quote": "the 2024 figure was unusually low because a temporary hiring programme ended in January 2025",
+      "context": "Analysts caution against reading the change as a collapse. They note the 2024 figure was unusually low because a temporary hiring programme ended in January 2025. The 2025 rate is close to the ten-year average.",
+      "label_stance": "context"
+    }
+  ]
+}
